@@ -1,22 +1,6 @@
 package ip
 
-import (
-	"errors"
-	"fmt"
-	"strconv"
-	"strings"
-)
-
-const (
-	CANT_BLOQUES = 4
-	MAX_BLOQUE   = 255
-	SEPARADOR_IP = "."
-)
-
-type IP struct{
-	combinacion [CANT_BLOQUES]int
-	//cmp 
+type IP interface {
+	ParsearIP(ipStr string) (IP, error)
+	//VerMasVisitados(n int) 
 }
-
-func ParsearIP(ipStr string) (IP) {}
-func (ip IP) CompararIPs(ip2 IP) int {}

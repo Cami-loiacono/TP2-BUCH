@@ -1,14 +1,13 @@
 package logs
 
-type Recurso struct {
-	Nombre   string
-	Cantidad int
-}
+import (
+	IP "tp2/ip"
+)
 
 type Logs interface {
 	AgregarArchivo(ruta string) ([]IP, error)
 
 	VerVisitantes(desde, hasta IP) []IP
 
-	VerMasVisitados(n int) []Recurso
+	//VerMasVisitados(n int) 
 }
