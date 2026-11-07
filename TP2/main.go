@@ -40,7 +40,7 @@ func comunicarIpsSospechosas(ipsSospechosas []ip.IP) {
 		if ip == nil {
 			fmt.Println("OK")
 		} else {
-			fmt.Println("DoS: ", ip)
+			fmt.Printf("DoS: %i\n", ip)
 		}
 	}
 }

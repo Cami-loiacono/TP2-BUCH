@@ -25,7 +25,7 @@ type logsServidor struct {
 
 func CrearLogs() Logs {
 	return &logsServidor{
-		visitantes:         TDADiccionario.CrearABB[IP.IP, bool](), //le falta un comparar, para que el abb sepa como acomodarlos
+		visitantes:         TDADiccionario.CrearABB[IP.IP, bool](), //le falta un comparar, para que el abb sepa como acomodarlos. COMPARAR DEBERIA DE DEJAR SER PRIMITIVTIVA Y PASEAR PODRIA SER LA PRMITIVA.
 		visitasArchivosIPs: TDADiccionario.CrearHash[string, int](),
 	}
 }
