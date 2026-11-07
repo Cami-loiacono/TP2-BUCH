@@ -40,9 +40,9 @@ func ParsearIP(ipStr string) (IP, error) {
 func (direccion ip) CompararIP(otraIp IP) int {
     otraDireccion := otraIp.(ip)
     for i := 0; i < _CANT_BLOQUES; i++ {
-        if direccion.ipPorBloques[i] < otraDireccion.ipPorBloques[i] {
-            return 0
+        if direccion.ipPorBloques[i] > otraDireccion.ipPorBloques[i] {
+            return 1
         }
     }
-    return 1
+    return 0
 }

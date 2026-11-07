@@ -35,6 +35,15 @@ func parsearEntrada(linea string) (string, []string) {
 	return campos[0], campos[1:]
 }
 
+func comunicarIpsSospechosas(ipsSospechosas []ip.IP) {
+	for _, ip := range ipsSospechosas {
+		if ip == nil {
+			fmt.Println("OK")
+		} else {
+			fmt.Println("DoS: ", ip)
+		}
+	}
+}
 
 func procesarRegistro(linea string, registro log.Logs) bool {
 	accion, restante := parsearEntrada(linea)
@@ -55,7 +64,8 @@ func agregarArchivo(restante []string, registro log.Logs) bool {
 	if len(restante) != _CANTIDAD_PARAMETROS_AGREGAR {
 		return false
 	}
-	registro.AgregarArchivo(restante[0])
+	ipsSospechosas := registro.AgregarArchivo(restante[0])
+	comunicarIpsSospechosas(ipsSospechosas)
 	return true
 }
 
