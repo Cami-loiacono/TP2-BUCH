@@ -5,17 +5,16 @@ import (
 	"os"
 	"strings"
 	TDADiccionario "tdas/diccionario"
+	TDALista "tdas/lista"
 	"time"
 	IP "tp2/ip"
-	"slices"
-	TDALista "tdas/lista"
 )
 
 const (
-	_CANTIDAD_PARAMETROS_LOGS = 4
-	_LAYOUT_FECHA = "2006-01-02T15:04:05-07:00"
+	_CANTIDAD_PARAMETROS_LOGS    = 4
+	_LAYOUT_FECHA                = "2006-01-02T15:04:05-07:00"
 	_CANTIDAD_MINIMA_VISITAS_DOS = 5
-	_SEGUNDOS_MINIMOS_DOS = 2
+	_SEGUNDOS_MINIMOS_DOS        = 2
 )
 
 type logsServidor struct {
@@ -25,7 +24,7 @@ type logsServidor struct {
 
 func CrearLogs() Logs {
 	return &logsServidor{
-		visitantes:         TDADiccionario.CrearABB[IP.IP, bool](), //le falta un comparar, para que el abb sepa como acomodarlos. COMPARAR DEBERIA DE DEJAR SER PRIMITIVTIVA Y PASEAR PODRIA SER LA PRMITIVA.
+		visitantes:         TDADiccionario.CrearABB[IP.IP, bool](IP.IP.CompararIP),
 		visitasArchivosIPs: TDADiccionario.CrearHash[string, int](),
 	}
 }
@@ -37,7 +36,47 @@ func verificarValidezLogs(campos []string) bool {
 	return true
 }
 
-// func ordenarIPs(sospechosas []IP.IP) { SEGURAMENTE RADIX
+func ordenarPorCounting(ips []IP.IP, posicion int) []IP.IP {
+	contadores := make([]int, 256)
+	ordenadas := make([]IP.IP, len(ips))
+
+	for _, direccion := range ips {
+		if direccion != nil {
+			contadores[direccion.ObtenerOcteto(posicion)]++
+		}
+	}
+
+	acumulado := 0
+	for octeto := range contadores {
+		cantidad := contadores[octeto]
+		contadores[octeto] = acumulado
+		acumulado += cantidad
+	}
+
+	for _, direccion := range ips {
+		if direccion != nil {
+			octeto := direccion.ObtenerOcteto(posicion)
+			ordenadas[contadores[octeto]] = direccion
+			contadores[octeto]++
+		}
+	}
+
+	indice := acumulado
+	for _, direccion := range ips {
+		if direccion == nil {
+			ordenadas[indice] = nil
+			indice++
+		}
+	}
+
+	return ordenadas
+}
+
+func ordenarIPs(sospechosas []IP.IP) {
+	for posicion := 3; posicion >= 0; posicion-- {
+		copy(sospechosas, ordenarPorCounting(sospechosas, posicion))
+	}
+}
 
 func esDoS(horas TDALista.Lista[time.Time]) bool {
 	if horas.Largo() < _CANTIDAD_MINIMA_VISITAS_DOS {
@@ -49,7 +88,7 @@ func esDoS(horas TDALista.Lista[time.Time]) bool {
 	for i := 0; i < _CANTIDAD_MINIMA_VISITAS_DOS; i++ {
 		iteradorSegundo.Siguiente()
 	}
-	
+
 	for iteradorSegundo.HayAlgoMas() {
 		tiempoPrimero := iteradorPrimero.VerActual()
 		tiempoSegundo := iteradorSegundo.VerActual()
@@ -78,11 +117,11 @@ func identificarIPsSospechosasDoS(horasIPs TDADiccionario.Diccionario[IP.IP, tim
 	return sospechosas
 }
 
-func (l *logsServidor) AgregarArchivo(ruta string) ([]IP.IP){
+func (l *logsServidor) AgregarArchivo(ruta string) []IP.IP {
 	archivoAbierto, _ := os.Open(ruta)
 	defer archivoAbierto.Close()
 	scanner := bufio.NewScanner(archivoAbierto)
-	var ipsSospechosas []IP.IP	
+	var ipsSospechosas []IP.IP
 	horasIPs := TDADiccionario.CrearHash[IP.IP, time.Time]()
 
 	for scanner.Scan() {
@@ -93,13 +132,21 @@ func (l *logsServidor) AgregarArchivo(ruta string) ([]IP.IP){
 		}
 		ip, _ := IP.ParsearIP(campos[0])
 		l.visitantes.Guardar(ip, true)
-		l.visitasArchivosIPs.Guardar(campos[3], l.visitasArchivosIPs.Obtener(campos[3]) + 1)
+		l.visitasArchivosIPs.Guardar(campos[3], l.visitasArchivosIPs.Obtener(campos[3])+1)
 		horasIPs.Guardar(ip, campos[1])
 	}
 	ipsSospechosas = identificarIPsSospechosasDoS(horasIPs)
 	return ipsSospechosas
 }
-func (l *logsServidor) VerVisitantes(desde, hasta IP.IP) []IP.IP    {}
-func (l *logsServidor) VerMasVisitados(n int) []Recurso             {}
 
-func buscarIPsSospechosas(ips []IP.IP) []IP.IP {}
+func (l *logsServidor) VerVisitantes(desde, hasta IP.IP) []IP.IP {
+
+}
+
+func (l *logsServidor) VerMasVisitados(n int) []Recurso {
+
+}
+
+func buscarIPsSospechosas(ips []IP.IP) []IP.IP {
+
+}
