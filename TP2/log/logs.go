@@ -5,9 +5,8 @@ import (
 )
 
 type Logs interface {
-	AgregarArchivo(ruta string) ([]IP, error)
-
-	VerVisitantes(desde, hasta IP) []IP
+	AgregarArchivo(ruta string) ([]IP.IP, error)
+	VerVisitantes(desde, hasta IP.IP) []IP.IP
 
 	//VerMasVisitados(n int) 
 }

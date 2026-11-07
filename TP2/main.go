@@ -21,10 +21,8 @@ const (
 )
 
 func verificarValidezRango(desdeIP, hastaIP ip.IP) bool {
-	for i := 0; i < ip.CANT_BLOQUES; i++ {
-		if desdeIP.ipPorBloques[i] > hastaIP.ipPorBloques[i] {
-			return false
-		}
+	if desdeIP.CompararIP(hastaIP) == 1 {
+		return false
 	}
 	return true
 }

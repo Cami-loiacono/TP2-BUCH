@@ -2,7 +2,6 @@ package ip
 
 import (
 	"errors"
-	"fmt"
 	"strconv"
 	"strings"
 )
@@ -14,29 +13,36 @@ const (
 
 )
 
-type ip struct{
-	ipPorBloques [CANT_BLOQUES]int
+type ip struct {
+    ipPorBloques [_CANT_BLOQUES]int
 }
 
 func ParsearIP(ipStr string) (IP, error) {
-	bloquesIP := strings.Split(ipStr, SEPARADOR_IP)
-	ip := IP{}
-	if len(bloquesIP) != CANT_BLOQUES {
-		return ip, errors.New("IP inválida: cantidad de bloques incorrecta")
-	}
-	for i, bloque := range bloquesIP {
-		bloqueInt, _ := strconv.Atoi(bloque)
-		ip.ipPorBloques[i] = bloqueInt
-	}
-	return ip, nil
+    bloquesIP := strings.Split(ipStr, _SEPARADOR_IP)
+    nuevaIP := ip{}
+
+    if len(bloquesIP) != _CANT_BLOQUES {
+        return nil, errors.New("IP inválida: cantidad de bloques incorrecta")
+    }
+
+    for i, bloque := range bloquesIP {
+        bloqueInt, err := strconv.Atoi(bloque)
+        if err != nil || bloqueInt < 0 || bloqueInt > _MAX_BLOQUE {
+            return nil, errors.New("IP inválida")
+        }
+
+        nuevaIP.ipPorBloques[i] = bloqueInt
+    }
+
+    return nuevaIP, nil
 }
 
-func (ip IP) CompararIP(otraIP IP) int {
-	for i := 0; i < CANT_BLOQUES; i++ {
-		if ip.ipPorBloques[i] < otraIP.ipPorBloques[i] {
-			return 0
-		}
-	}
-	return 1
+func (direccion ip) CompararIP(otraIp IP) int {
+    otraDireccion := otraIp.(ip)
+    for i := 0; i < _CANT_BLOQUES; i++ {
+        if direccion.ipPorBloques[i] < otraDireccion.ipPorBloques[i] {
+            return 0
+        }
+    }
+    return 1
 }
-
