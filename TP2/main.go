@@ -77,7 +77,7 @@ func verVisitantes(restante []string, registro log.Logs) bool {
 	}
 	desdeIP, errDesde := ip.ParsearIP(restante[0])
 	hastaIP, errHasta := ip.ParsearIP(restante[1])
-	if !verificarValidezRango(desdeIP, hastaIP) && errDesde != nil && errHasta != nil {
+	if !verificarValidezRango(desdeIP, hastaIP) || errDesde != nil || errHasta != nil {
 		return false
 	}
 	fmt.Println(_MENSAJE_VER_VISITANTES)

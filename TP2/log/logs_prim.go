@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 	TDADiccionario "tdas/diccionario"
+	TDACola "tdas/cola"
 	TDALista "tdas/lista"
 	"time"
 	IP "tp2/ip"
@@ -81,28 +82,26 @@ func esDoS(horas TDALista.Lista[time.Time]) bool {
 	if horas.Largo() < _CANTIDAD_MINIMA_VISITAS_DOS {
 		return false
 	}
-	hayDoS := false
 	iteradorPrimero := horas.Iterador()
 	iteradorSegundo := horas.Iterador()
-	for i := 0; i < _CANTIDAD_MINIMA_VISITAS_DOS; i++ {
-		iteradorSegundo.Siguiente()
+	for i := 0; i < _CANTIDAD_MINIMA_VISITAS_DOS - 1; i++ {
+		iteradorSegundo.Avanzar()
 	}
 
 	for iteradorSegundo.HayAlgoMas() {
 		tiempoPrimero := iteradorPrimero.VerActual()
 		tiempoSegundo := iteradorSegundo.VerActual()
 		diferencia := tiempoSegundo.Sub(tiempoPrimero)
-		if diferencia.Seconds() <= _SEGUNDOS_MINIMOS_DOS {
-			hayDoS = true
-			break
+		if diferencia.Seconds() < _SEGUNDOS_MINIMOS_DOS {
+			return true
 		}
-		tiempoPrimero = iteradorPrimero.Siguiente()
-		tiempoSegundo = iteradorSegundo.Siguiente()
+		tiempoPrimero = iteradorPrimero.Avanzar()
+		tiempoSegundo = iteradorSegundo.Avanzar()
 	}
-	return hayDoS
+	return false
 }
 
-func identificarIPsSospechosasDoS(horasIPs TDADiccionario.Diccionario[IP.IP, time.Time]) []IP.IP {
+func identificarIPsSospechosasDoS(horasIPs TDADiccionario.Diccionario[IP.IP, TDALista.Lista[time.Time]]) []IP.IP {
 	var sospechosas []IP.IP
 	horasIPs.Iterar(func(dir IP.IP, horas TDALista.Lista[time.Time]) bool {
 		if esDoS(horas) {
@@ -131,7 +130,11 @@ func (log *logsServidor) AgregarArchivo(ruta string) []IP.IP {
 		}
 		ip, _ := IP.ParsearIP(campos[0])
 		log.visitantes.Guardar(ip, true)
-		log.visitasArchivosIPs.Guardar(campos[3], log.visitasArchivosIPs.Obtener(campos[3])+1)
+		if !log.visitasArchivosIPs.Pertenece(campos[3]) {
+			log.visitasArchivosIPs.Guardar(campos[3], 1)
+		} else {
+			log.visitasArchivosIPs.Guardar(campos[3], log.visitasArchivosIPs.Obtener(campos[3])+1)
+		}
 		horasIPs.Guardar(ip, campos[1])
 	}
 	ipsSospechosas = identificarIPsSospechosasDoS(horasIPs)
@@ -154,7 +157,7 @@ func (log *logsServidor) VerMasVisitados(top int){
 		vector = append(vector, archivo)
 		return true
 	})
-	heap := TDADiccionario.CrearHeapArr[string](vector, func(a, b string) int { return log.visitasArchivosIPs.Obtener(a) - log.visitasArchivosIPs.Obtener(b) })
+	heap := TDACola.CrearHeapArr[string](vector, func(a, b string) int { return log.visitasArchivosIPs.Obtener(a) - log.visitasArchivosIPs.Obtener(b) })
 	vectorAuxiliar := make([]string, 0, top)
 	for i:= 0; i<top ; i++ {
 		archivoActual := heap.Desencolar()
