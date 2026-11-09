@@ -8,6 +8,7 @@ import (
 	TDALista "tdas/lista"
 	"time"
 	IP "tp2/ip"
+	"fmt"
 )
 
 const (
@@ -15,6 +16,7 @@ const (
 	_LAYOUT_FECHA                = "2006-01-02T15:04:05-07:00"
 	_CANTIDAD_MINIMA_VISITAS_DOS = 5
 	_SEGUNDOS_MINIMOS_DOS        = 2
+	_MAXIMO_NUMERO_IP = 256
 )
 
 type logsServidor struct {
@@ -37,13 +39,11 @@ func verificarValidezLogs(campos []string) bool {
 }
 
 func ordenarPorCounting(ips []IP.IP, posicion int) []IP.IP {
-	contadores := make([]int, 256)
+	contadores := make([]int, _MAXIMO_NUMERO_IP)
 	ordenadas := make([]IP.IP, len(ips))
 
 	for _, direccion := range ips {
-		if direccion != nil {
-			contadores[direccion.ObtenerOcteto(posicion)]++
-		}
+		contadores[direccion.ObtenerOcteto(posicion)]++
 	}
 
 	acumulado := 0
@@ -54,11 +54,10 @@ func ordenarPorCounting(ips []IP.IP, posicion int) []IP.IP {
 	}
 
 	for _, direccion := range ips {
-		if direccion != nil {
-			octeto := direccion.ObtenerOcteto(posicion)
-			ordenadas[contadores[octeto]] = direccion
-			contadores[octeto]++
-		}
+		octeto := direccion.ObtenerOcteto(posicion)
+		ordenadas[contadores[octeto]] = direccion
+		contadores[octeto]++
+		
 	}
 
 	indice := acumulado
@@ -113,7 +112,7 @@ func identificarIPsSospechosasDoS(horasIPs TDADiccionario.Diccionario[IP.IP, tim
 		}
 		return true
 	})
-	//ordenarIPs(sospechosas)
+	ordenarIPs(sospechosas)
 	return sospechosas
 }
 
@@ -139,14 +138,13 @@ func (l *logsServidor) AgregarArchivo(ruta string) []IP.IP {
 	return ipsSospechosas
 }
 
-func (l *logsServidor) VerVisitantes(desde, hasta IP.IP) []IP.IP {
-
+func (l *logsServidor) VerVisitantes(desde, hasta IP.IP){
+	l.visitantes.IterarRango(desde, hasta, func(ip IP.IP, _ bool) bool {
+		fmt.Println(ip)
+		return true
+	})
 }
 
-func (l *logsServidor) VerMasVisitados(n int) []Recurso {
-
-}
-
-func buscarIPsSospechosas(ips []IP.IP) []IP.IP {
+func (l *logsServidor) VerMasVisitados(n int){
 
 }

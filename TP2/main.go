@@ -18,6 +18,8 @@ const (
 	_CANTIDAD_PARAMETROS_AGREGAR = 1
 	_CANTIDAD_PARAMETROS_VER_VISITANTES = 2
 	_CANTIDAD_PARAMETROS_VER_TOP_VISITADOS = 1
+	_MENSAJE_VER_MAS_VISITADOS = "Sitios más visitados:"
+	_MENSAJE_VER_VISITANTES = "Visitantes:"
 )
 
 func verificarValidezRango(desdeIP, hastaIP ip.IP) bool {
@@ -78,6 +80,7 @@ func verVisitantes(restante []string, registro log.Logs) bool {
 	if !verificarValidezRango(desdeIP, hastaIP) && errDesde != nil && errHasta != nil {
 		return false
 	}
+	fmt.Println(_MENSAJE_VER_VISITANTES)
    	registro.VerVisitantes(desdeIP, hastaIP)
    	return true
 }
@@ -90,7 +93,7 @@ func verMasVisitados(restante []string, registro log.Logs) bool {
 	if numeroTop <= 0 {
 		return false
 	}
-	fmt.Println("Sitios más visitados:")
+	fmt.Println(_MENSAJE_VER_MAS_VISITADOS)
 	registro.VerMasVisitados()
 	return true
 }
