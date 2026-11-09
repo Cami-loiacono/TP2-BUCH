@@ -82,6 +82,7 @@ func verVisitantes(restante []string, registro log.Logs) bool {
 	}
 	fmt.Println(_MENSAJE_VER_VISITANTES)
    	registro.VerVisitantes(desdeIP, hastaIP)
+	fmt.Println("OK")
    	return true
 }
 
@@ -90,11 +91,9 @@ func verMasVisitados(restante []string, registro log.Logs) bool {
 		return false
 	}
 	numeroTop, _ := strconv.Atoi(restante[0])
-	if numeroTop <= 0 {
-		return false
-	}
 	fmt.Println(_MENSAJE_VER_MAS_VISITADOS)
-	registro.VerMasVisitados()
+	registro.VerMasVisitados(numeroTop)
+	fmt.Println("OK")
 	return true
 }
 

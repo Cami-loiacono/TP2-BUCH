@@ -2,13 +2,13 @@ package logs
 
 import (
 	"bufio"
+	"fmt"
 	"os"
 	"strings"
 	TDADiccionario "tdas/diccionario"
 	TDALista "tdas/lista"
 	"time"
 	IP "tp2/ip"
-	"fmt"
 )
 
 const (
@@ -116,7 +116,7 @@ func identificarIPsSospechosasDoS(horasIPs TDADiccionario.Diccionario[IP.IP, tim
 	return sospechosas
 }
 
-func (l *logsServidor) AgregarArchivo(ruta string) []IP.IP {
+func (log *logsServidor) AgregarArchivo(ruta string) []IP.IP {
 	archivoAbierto, _ := os.Open(ruta)
 	defer archivoAbierto.Close()
 	scanner := bufio.NewScanner(archivoAbierto)
@@ -130,21 +130,39 @@ func (l *logsServidor) AgregarArchivo(ruta string) []IP.IP {
 			continue
 		}
 		ip, _ := IP.ParsearIP(campos[0])
-		l.visitantes.Guardar(ip, true)
-		l.visitasArchivosIPs.Guardar(campos[3], l.visitasArchivosIPs.Obtener(campos[3])+1)
+		log.visitantes.Guardar(ip, true)
+		log.visitasArchivosIPs.Guardar(campos[3], log.visitasArchivosIPs.Obtener(campos[3])+1)
 		horasIPs.Guardar(ip, campos[1])
 	}
 	ipsSospechosas = identificarIPsSospechosasDoS(horasIPs)
 	return ipsSospechosas
 }
 
-func (l *logsServidor) VerVisitantes(desde, hasta IP.IP){
-	l.visitantes.IterarRango(desde, hasta, func(ip IP.IP, _ bool) bool {
-		fmt.Println(ip)
+func (log *logsServidor) VerVisitantes(desde IP.IP, hasta IP.IP){
+	log.visitantes.IterarRango(desde, hasta, func(ip IP.IP, _ bool) bool {
+		fmt.Printf("%s\n", ip)
 		return true
 	})
 }
 
-func (l *logsServidor) VerMasVisitados(n int){
-
+func (log *logsServidor) VerMasVisitados(top int){
+	if top > log.visitasArchivosIPs.Cantidad() {
+		top = log.visitasArchivosIPs.Cantidad()
+	}
+	vector := make([]string, 0, log.visitasArchivosIPs.Cantidad())
+	log.visitasArchivosIPs.Iterar(func(archivo string, cantidad int) bool {
+		vector = append(vector, archivo)
+		return true
+	})
+	heap := TDADiccionario.CrearHeapArr[string](vector, func(a, b string) int { return log.visitasArchivosIPs.Obtener(a) - log.visitasArchivosIPs.Obtener(b) })
+	vectorAuxiliar := make([]string, 0, top)
+	for i:= 0; i<top ; i++ {
+		archivoActual := heap.Desencolar()
+		vectorAuxiliar = append(vectorAuxiliar, archivoActual)
+		visitas := log.visitasArchivosIPs.Obtener(archivoActual)
+		fmt.Printf("\t%s - %d\n", archivoActual, visitas)
+	}
+	for i:=0; i<top; i++ {
+		heap.Encolar(vectorAuxiliar[i])
+	}
 }
