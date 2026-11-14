@@ -61,14 +61,6 @@ func ordenarPorCounting(ips []IP.IP, posicion int) []IP.IP {
 		
 	}
 
-	indice := acumulado
-	for _, direccion := range ips {
-		if direccion == nil {
-			ordenadas[indice] = nil
-			indice++
-		}
-	}
-
 	return ordenadas
 }
 
@@ -106,8 +98,6 @@ func identificarIPsSospechosasDoS(horasIPs TDADiccionario.Diccionario[IP.IP, TDA
 	horasIPs.Iterar(func(dir IP.IP, horas TDALista.Lista[time.Time]) bool {
 		if esDoS(horas) {
 			sospechosas = append(sospechosas, dir)
-		} else {
-			sospechosas = append(sospechosas, nil)
 		}
 		return true
 	})
