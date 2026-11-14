@@ -111,7 +111,7 @@ func main() {
 		if !procesarRegistro(linea, registro) {
 			accion, _ := parsearEntrada(linea)
 			fmt.Fprintf(os.Stderr, "Error en comando %s\n", accion)
-			os.Exit(1)
+			return
 		}
 		fmt.Println(_REGISTRO_CORRECTO)
 	}
