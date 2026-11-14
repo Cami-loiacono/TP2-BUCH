@@ -4,22 +4,22 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"strings"
 	"strconv"
-	log "tp2/log"
+	"strings"
 	ip "tp2/ip"
+	log "tp2/log"
 )
 
 const (
-	_AGREGAR_ARCHIVO = "agregar_archivo"
-	_VER_VISITANTES = "ver_visitantes"
-	_VER_MAS_VISITADOS = "ver_mas_visitados"
-	_REGISTRO_CORRECTO = "OK"
-	_CANTIDAD_PARAMETROS_AGREGAR = 1
-	_CANTIDAD_PARAMETROS_VER_VISITANTES = 2
+	_AGREGAR_ARCHIVO                       = "agregar_archivo"
+	_VER_VISITANTES                        = "ver_visitantes"
+	_VER_MAS_VISITADOS                     = "ver_mas_visitados"
+	_REGISTRO_CORRECTO                     = "OK"
+	_CANTIDAD_PARAMETROS_AGREGAR           = 1
+	_CANTIDAD_PARAMETROS_VER_VISITANTES    = 2
 	_CANTIDAD_PARAMETROS_VER_TOP_VISITADOS = 1
-	_MENSAJE_VER_MAS_VISITADOS = "Sitios más visitados:"
-	_MENSAJE_VER_VISITANTES = "Visitantes:"
+	_MENSAJE_VER_MAS_VISITADOS             = "Sitios más visitados:"
+	_MENSAJE_VER_VISITANTES                = "Visitantes:"
 )
 
 func verificarValidezRango(desdeIP, hastaIP ip.IP) bool {
@@ -39,10 +39,13 @@ func parsearEntrada(linea string) (string, []string) {
 
 func comunicarIpsSospechosas(ipsSospechosas []ip.IP) {
 	for _, ip := range ipsSospechosas {
-		if ip == nil {
-			fmt.Println("OK")
-		} else {
-			fmt.Printf("DoS: %i\n", ip)
+		if ip != nil {
+			fmt.Printf("DoS: %d.%d.%d.%d\n",
+				ip.ObtenerOcteto(0),
+				ip.ObtenerOcteto(1),
+				ip.ObtenerOcteto(2),
+				ip.ObtenerOcteto(3),
+			)
 		}
 	}
 }
@@ -66,6 +69,11 @@ func agregarArchivo(restante []string, registro log.Logs) bool {
 	if len(restante) != _CANTIDAD_PARAMETROS_AGREGAR {
 		return false
 	}
+	archivo, err := os.Open(restante[0])
+	if err != nil {
+		return false
+	}
+	archivo.Close()
 	ipsSospechosas := registro.AgregarArchivo(restante[0])
 	comunicarIpsSospechosas(ipsSospechosas)
 	return true
@@ -81,23 +89,19 @@ func verVisitantes(restante []string, registro log.Logs) bool {
 		return false
 	}
 	fmt.Println(_MENSAJE_VER_VISITANTES)
-   	registro.VerVisitantes(desdeIP, hastaIP)
-	fmt.Println("OK")
-   	return true
+	registro.VerVisitantes(desdeIP, hastaIP)
+	return true
 }
 
 func verMasVisitados(restante []string, registro log.Logs) bool {
-	if len(restante) != _CANTIDAD_PARAMETROS_VER_TOP_VISITADOS{
+	if len(restante) != _CANTIDAD_PARAMETROS_VER_TOP_VISITADOS {
 		return false
 	}
 	numeroTop, _ := strconv.Atoi(restante[0])
 	fmt.Println(_MENSAJE_VER_MAS_VISITADOS)
 	registro.VerMasVisitados(numeroTop)
-	fmt.Println("OK")
 	return true
 }
-
-
 
 func main() {
 	registro := log.CrearLogs() //nomrbe registro es raro, no agarra un solo registro, sino que es un conjunto de registros, pero bueno
@@ -105,7 +109,8 @@ func main() {
 	for scanner.Scan() {
 		linea := scanner.Text()
 		if !procesarRegistro(linea, registro) {
-			fmt.Fprintln(os.Stderr, "Error en comando %s\n", linea)
+			accion, _ := parsearEntrada(linea)
+			fmt.Fprintf(os.Stderr, "Error en comando %s\n", accion)
 			os.Exit(1)
 		}
 		fmt.Println(_REGISTRO_CORRECTO)

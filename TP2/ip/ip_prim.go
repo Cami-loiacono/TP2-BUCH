@@ -54,3 +54,6 @@ func (direccion ip) ObtenerOcteto(posicion int) int {
 	}
 	return direccion.ipPorBloques[posicion]
 }
+
+
+
