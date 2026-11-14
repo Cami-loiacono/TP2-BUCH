@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 	TDADiccionario "tdas/diccionario"
-	TDACola "tdas/cola"
+	TDACola "tdas/cola_prioridad"
 	TDALista "tdas/lista"
 	"time"
 	IP "tp2/ip"
@@ -95,8 +95,8 @@ func esDoS(horas TDALista.Lista[time.Time]) bool {
 		if diferencia.Seconds() < _SEGUNDOS_MINIMOS_DOS {
 			return true
 		}
-		tiempoPrimero = iteradorPrimero.Avanzar()
-		tiempoSegundo = iteradorSegundo.Avanzar()
+		iteradorPrimero.Avanzar()
+		iteradorSegundo.Avanzar()
 	}
 	return false
 }
@@ -120,7 +120,7 @@ func (log *logsServidor) AgregarArchivo(ruta string) []IP.IP {
 	defer archivoAbierto.Close()
 	scanner := bufio.NewScanner(archivoAbierto)
 	var ipsSospechosas []IP.IP
-	horasIPs := TDADiccionario.CrearHash[IP.IP, time.Time]()
+	horasIPs := TDADiccionario.CrearHash[IP.IP, TDALista.Lista[time.Time]]()
 
 	for scanner.Scan() {
 		linea := scanner.Text()
@@ -135,14 +135,18 @@ func (log *logsServidor) AgregarArchivo(ruta string) []IP.IP {
 		} else {
 			log.visitasArchivosIPs.Guardar(campos[3], log.visitasArchivosIPs.Obtener(campos[3])+1)
 		}
-		horasIPs.Guardar(ip, campos[1])
+		fecha, _ := time.Parse(_LAYOUT_FECHA, campos[1])
+		if !horasIPs.Pertenece(ip) {
+			horasIPs.Guardar(ip, TDALista.CrearListaEnlazada[time.Time]())
+		}
+		horasIPs.Obtener(ip).InsertarUltimo(fecha)
 	}
 	ipsSospechosas = identificarIPsSospechosasDoS(horasIPs)
 	return ipsSospechosas
 }
 
 func (log *logsServidor) VerVisitantes(desde IP.IP, hasta IP.IP){
-	log.visitantes.IterarRango(desde, hasta, func(ip IP.IP, _ bool) bool {
+	log.visitantes.IterarRango(&desde, &hasta, func(ip IP.IP, _ bool) bool {
 		fmt.Printf("%s\n", ip)
 		return true
 	})
